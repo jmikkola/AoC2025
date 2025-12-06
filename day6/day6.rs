@@ -4,7 +4,7 @@ use std::fs;
 fn main() {
     let content = get_content(get_arg());
     part1(&content);
-    // part2(&content);
+    part2(&content);
 }
 
 fn get_arg() -> String {
@@ -48,5 +48,50 @@ fn part1(input: &str) {
     println!("part 1: {}", total);
 }
 
-// fn part2(input: &str) {
-// }
+fn part2(input: &str) {
+    let lines: Vec<&str> = input.split('\n').collect();
+    let chars: Vec<Vec<char>> = lines.iter().map(|line| line.chars().collect()).collect();
+
+    let mut chars_flipped = vec![];
+    for j in 0..chars[0].len() {
+        let mut col = vec![];
+        for i in 0..chars.len() {
+            if j < chars[i].len() {
+                col.push(chars[i][j]);
+            } else {
+                col.push(' ');
+            }
+        }
+        let new_row: String = col.iter().collect();
+        chars_flipped.push(new_row);
+    }
+
+    chars_flipped.push("  ".to_string());
+    let mut acc = 0;
+    let mut op = '+';
+    let mut total = 0;
+
+    for line in chars_flipped {
+        if line.trim().is_empty() {
+            total += acc;
+            continue;
+        }
+        let n: u64 = line.trim().chars().take_while(|c| c.is_numeric()).collect::<String>().parse().unwrap();
+
+        if line.trim().ends_with('+') {
+            op = '+';
+            acc = n;
+        } else if line.trim().ends_with('*') {
+            op = '*';
+            acc = n;
+        } else {
+            if op == '+' {
+                acc += n;
+            } else {
+                acc *= n;
+            }
+        }
+    }
+
+    println!("part 2: {}", total);
+}
