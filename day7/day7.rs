@@ -1,7 +1,6 @@
 use std::env;
 use std::fs;
 use std::collections::HashSet;
-use std::collections::HashMap;
 
 fn main() {
     let content = get_content(get_arg());
@@ -64,39 +63,39 @@ fn part2(input: &str) {
     let chars: Vec<Vec<char>> = input.split('\n')
         .map(|line| line.chars().collect())
         .collect();
+    let width = chars[0].len();
 
     let start_beam = chars[0].iter().position(|&c| c == 'S').unwrap();
-    let mut beams: HashMap<usize, u64> = HashMap::new();
-    beams.insert(start_beam, 1);
+    let mut beams: Vec<u64> = vec![0; width];
+    beams[start_beam] = 1;
 
     for row in chars.iter().skip(1) {
-        let mut to_insert = vec![];
-        for (&beam, &count) in beams.iter() {
+        let mut next_beams = vec![0; width];
+        for beam in 0..width {
+            let count = beams[beam];
+            if count == 0 {
+                continue;
+            }
+
             if row[beam] == '.' {
-                to_insert.push((beam, count));
+                next_beams[beam] += count;
             } else if row[beam] == '^' {
                 let lower = beam.checked_sub(1);
                 if let Some(lower_beam) = lower {
-                    to_insert.push((lower_beam, count));
+                    next_beams[lower_beam] += count;
                 }
                 let upper = beam + 1;
-                if upper < row.len() {
-                    to_insert.push((upper, count));
+                if upper < width {
+                    next_beams[upper] += count;
                 }
             }
-        }
-
-        let mut next_beams: HashMap<usize, u64> = HashMap::new();
-        for (beam, count) in to_insert.iter() {
-            let existing = next_beams.get(beam).cloned().unwrap_or(0);
-            next_beams.insert(*beam, *count + existing);
         }
 
         beams = next_beams;
     }
 
     let mut splits = 0;
-    for (_, &count) in beams.iter() {
+    for &count in beams.iter() {
         splits += count;
     }
 
